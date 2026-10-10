@@ -63,15 +63,15 @@ try:
     if "data" in df.columns:
       parsed_values = df["data"].apply(parse_hex_data)
       df["val1"] = [v[0] for v in parsed_values]
-      df["val2"] = [v[1] if len(v) > 1 else None for v in parsed_values]
-      df["val3"] = [v[2] if len(v) > 2 else None for v in parsed_values]
+      # val2 と val3 は 10で割った値にする
+      df["val2"] = [v[1] / 10.0 if len(v) > 1 and v[1] is not None else None for v in parsed_values]
+      df["val3"] = [v[2] / 10.0 if len(v) > 2 and v[2] is not None else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (1時間ごとの縦の罫線を追加)】
+    # 【上部にグラフを表示 (val1のみ・1時間ごとの縦罫線付き)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
 
-      # axis=alt.Axis(grid=True, ...) を設定して縦のグリッド線を有効化
       chart = (
           alt.Chart(chart_df)
           .mark_line(point=True)
@@ -88,9 +88,17 @@ try:
       )
       st.altair_chart(chart, use_container_width=True)
 
-    # 【下部に受信データ一覧を表示】
+    # 【下部に受信データ一覧を表示（列名を単位付きに変更）】
     st.subheader("受信データ一覧")
-    st.dataframe(df)
+    
+    # 表示用の列名変更マッピング
+    rename_cols = {
+        "val1": "val1 (ppm)",
+        "val2": "val2 (℃)",
+        "val3": "val3 (%)"
+    }
+    display_df = df.rename(columns=rename_cols)
+    st.dataframe(display_df)
 
 except Exception as e:
   st.error(

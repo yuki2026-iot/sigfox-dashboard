@@ -3,7 +3,7 @@ import boto3
 import pandas as pd
 import streamlit as st
 
-st.title("センサーデータ")
+st.title("Sigfox センサーデータ リアルタイム監視")
 
 
 # AWS DynamoDBからデータを取得する設定
@@ -66,12 +66,12 @@ try:
       df["val2"] = [v[1] if len(v) > 1 else None for v in parsed_values]
       df["val3"] = [v[2] if len(v) > 2 else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (val1のみ・縦軸を "ppm" に変更)】
+    # 【上部にグラフを表示 (1時間ごとの縦の罫線を追加)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
 
-      # 縦軸のタイトルを "ppm" に指定
+      # axis=alt.Axis(grid=True, ...) を設定して縦のグリッド線を有効化
       chart = (
           alt.Chart(chart_df)
           .mark_line(point=True)
@@ -80,6 +80,7 @@ try:
                   "datetime:T",
                   sort="descending",
                   title="時刻",
+                  axis=alt.Axis(grid=True, tickCount="hour"),
               ),
               y=alt.Y("val1:Q", title="ppm"),
           )

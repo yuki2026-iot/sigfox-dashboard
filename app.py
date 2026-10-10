@@ -63,13 +63,8 @@ try:
     if "data" in df.columns:
       parsed_values = df["data"].apply(parse_hex_data)
       df["val1"] = [v[0] for v in parsed_values]
-      # val2 と val3 は 10で割った値にする
       df["val2"] = [v[1] / 10.0 if len(v) > 1 and v[1] is not None else None for v in parsed_values]
       df["val3"] = [v[2] / 10.0 if len(v) > 2 and v[2] is not None else None for v in parsed_values]
-
-      # 小数第1位までに丸める
-      df["val2"] = df["val2"].round(1)
-      df["val3"] = df["val3"].round(1)
 
     # 【上部にグラフを表示 (val1のみ・1時間ごとの縦罫線付き)】
     if "datetime" in df.columns and "val1" in df.columns:
@@ -92,19 +87,21 @@ try:
       )
       st.altair_chart(chart, use_container_width=True)
 
-    # 【下部に受信データ一覧を表示（幅を広げ、小数第1位まで表示、列名を単位付きに変更）】
+    # 【下部に受信データ一覧を表示】
     st.subheader("受信データ一覧")
     
-    # 表示用の列名変更マッピング
-    rename_cols = {
-        "val1": "val1 (ppm)",
-        "val2": "val2 (℃)",
-        "val3": "val3 (%)"
-    }
-    display_df = df.rename(columns=rename_cols)
-    
-    # use_container_width=True で表のサイズを画面幅いっぱいに広げる
-    st.dataframe(display_df, use_container_width=True, height=400)
+    if not df.empty:
+      # 見やすくするため、表示する列を絞り込んで整形する
+      table_df = pd.DataFrame()
+      table_df["デバイス"] = df.get("device", "")
+      table_df["時刻"] = df.get("datetime", "")
+      table_df["val1 (ppm)"] = df.get("val1", pd.Series())
+      
+      # val2 と val3 を確実に小数第1位まで表示する文字列に変換（例: 28.0）
+      table_df["val2 (℃)"] = df["val2"].apply(lambda x: f"{x:.1f}" if pd.notnull(x) else "")
+      table_df["val3 (%)"] = df["val3"].apply(lambda x: f"{x:.1f}" if pd.notnull(x) else "")
+
+      st.dataframe(table_df, use_container_width=True, height=400)
 
 except Exception as e:
   st.error(

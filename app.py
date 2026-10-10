@@ -33,7 +33,6 @@ def load_data():
         .dt.tz_convert("Asia/Tokyo")
         .dt.tz_localize(None)
     )
-    # 新しい順（降順）にソート
     df = df.sort_values("datetime", ascending=False)
 
   return df
@@ -67,21 +66,21 @@ try:
       df["val2"] = [v[1] if len(v) > 1 else None for v in parsed_values]
       df["val3"] = [v[2] if len(v) > 2 else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (val1のみ・Altairを使用してX軸の順序を固定)】
+    # 【上部にグラフを表示 (val1のみ・X軸を降順/反転させて左側を最新にする)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
 
-      # AltairでX軸の順序をデータフレームの並び順（降順＝左側が最新）のまま描画する
+      # sort="descending" を指定して左側に最新時刻が来るようにする
       chart = (
           alt.Chart(chart_df)
           .mark_line(point=True)
           .encode(
               x=alt.X(
                   "datetime:T",
-                  sort=None,
+                  sort="descending",
                   title="時刻",
-              ),  # sort=Noneで自動ソートを無効化
+              ),
               y=alt.Y("val1:Q", title="val1"),
           )
           .interactive()

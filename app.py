@@ -67,6 +67,10 @@ try:
       df["val2"] = [v[1] / 10.0 if len(v) > 1 and v[1] is not None else None for v in parsed_values]
       df["val3"] = [v[2] / 10.0 if len(v) > 2 and v[2] is not None else None for v in parsed_values]
 
+      # 小数第1位までに丸める
+      df["val2"] = df["val2"].round(1)
+      df["val3"] = df["val3"].round(1)
+
     # 【上部にグラフを表示 (val1のみ・1時間ごとの縦罫線付き)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
@@ -88,7 +92,7 @@ try:
       )
       st.altair_chart(chart, use_container_width=True)
 
-    # 【下部に受信データ一覧を表示（列名を単位付きに変更）】
+    # 【下部に受信データ一覧を表示（幅を広げ、小数第1位まで表示、列名を単位付きに変更）】
     st.subheader("受信データ一覧")
     
     # 表示用の列名変更マッピング
@@ -98,7 +102,9 @@ try:
         "val3": "val3 (%)"
     }
     display_df = df.rename(columns=rename_cols)
-    st.dataframe(display_df)
+    
+    # use_container_width=True で表のサイズを画面幅いっぱいに広げる
+    st.dataframe(display_df, use_container_width=True, height=400)
 
 except Exception as e:
   st.error(

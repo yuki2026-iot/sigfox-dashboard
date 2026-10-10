@@ -24,10 +24,14 @@ def load_data():
     return pd.DataFrame()
 
   df = pd.DataFrame(items)
-  # タイムスタンプや数値データを適切な型に変換
+  # タイムスタンプを数値化し、UTCから日本時間（JST = Asia/Tokyo）に変換
   if "time" in df.columns:
     df["time"] = pd.to_numeric(df["time"])
-    df["datetime"] = pd.to_datetime(df["time"], unit="s")
+    df["datetime"] = (
+        pd.to_datetime(df["time"], unit="s", utc=True)
+        .dt.tz_convert("Asia/Tokyo")
+        .dt.tz_localize(None)
+    )
     df = df.sort_values("datetime")
 
   return df
@@ -61,7 +65,7 @@ try:
       df["val2"] = [v[1] if len(v) > 1 else None for v in parsed_values]
       df["val3"] = [v[2] if len(v) > 2 else None for v in parsed_values]
 
-    # 【上部にグラフを表示】
+    # 【上部にグラフを表示 (val1のみ)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
       chart_df = df.set_index("datetime")[["val1"]].dropna(how="all")

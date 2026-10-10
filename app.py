@@ -66,7 +66,7 @@ try:
       df["val2"] = [v[1] / 10.0 if len(v) > 1 and v[1] is not None else None for v in parsed_values]
       df["val3"] = [v[2] / 10.0 if len(v) > 2 and v[2] is not None else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (罫線の色を濃い灰色に調整)】
+    # 【上部にグラフを表示 (軸の文字色を黒に設定)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
@@ -84,18 +84,20 @@ try:
                       tickCount="hour",
                       format="%H:%M",
                       gridColor="#888888",
-                  ),  # gridColorで罫線を濃い灰色に指定
+                  ),
               ),
               y=alt.Y(
                   "val1:Q",
                   title="ppm",
-                  axis=alt.Axis(
-                      grid=True, gridColor="#888888"
-                  ),  # 縦軸のグリッド線も同様に調整
+                  axis=alt.Axis(grid=True, gridColor="#888888"),
               ),
           )
           .interactive()
           .configure_view(fill="#FFFFCC")
+          .configure_axis(
+              labelColor="black",  # 目盛りの文字色を黒に指定
+              titleColor="black",  # 軸タイトルの文字色を黒に指定
+          )
       )
       st.altair_chart(chart, use_container_width=True)
 

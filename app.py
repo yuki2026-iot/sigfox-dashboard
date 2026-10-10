@@ -3,7 +3,7 @@ import boto3
 import pandas as pd
 import streamlit as st
 
-st.title("Sigfox センサーデータ リアルタイム監視")
+st.title("センサーデータ")
 
 
 # AWS DynamoDBからデータを取得する設定
@@ -68,7 +68,7 @@ try:
 
     # 【上部にグラフを表示 (val1のみ・1時間ごとの縦罫線付き)】
     if "datetime" in df.columns and "val1" in df.columns:
-      st.subheader("センサー値の推移グラフ (val1)")
+      st.subheader("二酸化炭素濃度（ppm）")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
 
       chart = (

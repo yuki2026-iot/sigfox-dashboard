@@ -1,3 +1,4 @@
+import altair as alt
 import boto3
 import pandas as pd
 import streamlit as st
@@ -32,7 +33,7 @@ def load_data():
         .dt.tz_convert("Asia/Tokyo")
         .dt.tz_localize(None)
     )
-    # ★ここで新しい順（降順）にソートして、左側に最新時刻が来るようにする
+    # 新しい順（降順）にソート
     df = df.sort_values("datetime", ascending=False)
 
   return df
@@ -43,7 +44,7 @@ def parse_hex_data(hex_str):
   try:
     if not isinstance(hex_str, str):
       return [None, None, None]
-    # 1. 16進数を文字列にデコード (例: "30363431..." -> "0641,278,526")
+    # 1. 16進数を文字列にデコード
     ascii_str = bytes.fromhex(hex_str).decode("utf-8")
     # 2. カンマで分割して数値に変換
     values = [float(v.strip()) for v in ascii_str.split(",")]
@@ -66,11 +67,26 @@ try:
       df["val2"] = [v[1] if len(v) > 1 else None for v in parsed_values]
       df["val3"] = [v[2] if len(v) > 2 else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (val1のみ)】
+    # 【上部にグラフを表示 (val1のみ・Altairを使用してX軸の順序を固定)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
-      chart_df = df.set_index("datetime")[["val1"]].dropna(how="all")
-      st.line_chart(chart_df)
+      chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
+
+      # AltairでX軸の順序をデータフレームの並び順（降順＝左側が最新）のまま描画する
+      chart = (
+          alt.Chart(chart_df)
+          .mark_line(point=True)
+          .encode(
+              x=alt.X(
+                  "datetime:T",
+                  sort=None,
+                  title="時刻",
+              ),  # sort=Noneで自動ソートを無効化
+              y=alt.Y("val1:Q", title="val1"),
+          )
+          .interactive()
+      )
+      st.altair_chart(chart, use_container_width=True)
 
     # 【下部に受信データ一覧を表示】
     st.subheader("受信データ一覧")

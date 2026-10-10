@@ -55,20 +55,19 @@ try:
     st.warning("DynamoDBにデータがまだありません。")
   else:
     # データの `data` 列をパースして個別のセンサー値列を作成
+    if "data" in df.columns:
+      parsed_values = df["data"].apply(parse_hex_data)
+      df["val1"] = [v[0] for v in parsed_values]
+      df["val2"] = [v[1] if len(v) > 1 else None for v in parsed_values]
+      df["val3"] = [v[2] if len(v) > 2 else None for v in parsed_values]
+
+    st.subheader("受信データ一覧")
+    st.dataframe(df)
+
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("センサー値の推移グラフ (val1)")
       # datetimeをインデックスにして、val1 のみグラフ描画
       chart_df = df.set_index("datetime")[["val1"]].dropna(how="all")
-      st.line_chart(chart_df)
-      st.subheader("受信データ一覧")
-      st.dataframe(df)
-
-    if "datetime" in df.columns and "val1" in df.columns:
-      st.subheader("センサー値の推移グラフ")
-      # datetimeをインデックスにして、数値化した列（val1など）をグラフ描画
-      chart_df = df.set_index("datetime")[["val1", "val2", "val3"]].dropna(
-          how="all"
-      )
       st.line_chart(chart_df)
 except Exception as e:
   st.error(

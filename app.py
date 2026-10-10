@@ -66,11 +66,12 @@ try:
       df["val2"] = [v[1] / 10.0 if len(v) > 1 and v[1] is not None else None for v in parsed_values]
       df["val3"] = [v[2] / 10.0 if len(v) > 2 and v[2] is not None else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (val1のみ・1時間ごとの縦罫線付き)】
+    # 【上部にグラフを表示 (24時間表記に修正)】
     if "datetime" in df.columns and "val1" in df.columns:
       st.subheader("二酸化炭素濃度（ppm）")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
 
+      # format='%H:%M' を追加して24時間表記にする
       chart = (
           alt.Chart(chart_df)
           .mark_line(point=True)
@@ -79,7 +80,7 @@ try:
                   "datetime:T",
                   sort="descending",
                   title="時刻",
-                  axis=alt.Axis(grid=True, tickCount="hour"),
+                  axis=alt.Axis(grid=True, tickCount="hour", format="%H:%M"),
               ),
               y=alt.Y("val1:Q", title="ppm"),
           )
@@ -91,13 +92,10 @@ try:
     st.subheader("受信データ一覧")
     
     if not df.empty:
-      # 見やすくするため、表示する列を絞り込んで整形する
       table_df = pd.DataFrame()
       table_df["デバイス"] = df.get("device", "")
       table_df["時刻"] = df.get("datetime", "")
       table_df["val1 (ppm)"] = df.get("val1", pd.Series())
-      
-      # val2 と val3 を確実に小数第1位まで表示する文字列に変換（例: 28.0）
       table_df["val2 (℃)"] = df["val2"].apply(lambda x: f"{x:.1f}" if pd.notnull(x) else "")
       table_df["val3 (%)"] = df["val3"].apply(lambda x: f"{x:.1f}" if pd.notnull(x) else "")
 

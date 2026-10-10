@@ -32,7 +32,8 @@ def load_data():
         .dt.tz_convert("Asia/Tokyo")
         .dt.tz_localize(None)
     )
-    df = df.sort_values("datetime")
+    # ★ここで新しい順（降順）にソートして、左側に最新時刻が来るようにする
+    df = df.sort_values("datetime", ascending=False)
 
   return df
 

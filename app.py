@@ -3,7 +3,7 @@ import boto3
 import pandas as pd
 import streamlit as st
 
-st.title("センサーデータ")
+st.title("Sigfox センサーデータ リアルタイム監視")
 
 
 # AWS DynamoDBからデータを取得する設定
@@ -66,12 +66,11 @@ try:
       df["val2"] = [v[1] / 10.0 if len(v) > 1 and v[1] is not None else None for v in parsed_values]
       df["val3"] = [v[2] / 10.0 if len(v) > 2 and v[2] is not None else None for v in parsed_values]
 
-    # 【上部にグラフを表示 (24時間表記に修正)】
+    # 【上部にグラフを表示 (罫線の中だけ #FFFFCC に設定)】
     if "datetime" in df.columns and "val1" in df.columns:
-      st.subheader("二酸化炭素濃度（ppm）")
+      st.subheader("センサー値の推移グラフ (val1)")
       chart_df = df[["datetime", "val1"]].dropna(subset=["val1"])
 
-      # format='%H:%M' を追加して24時間表記にする
       chart = (
           alt.Chart(chart_df)
           .mark_line(point=True)
@@ -85,6 +84,9 @@ try:
               y=alt.Y("val1:Q", title="ppm"),
           )
           .interactive()
+          .configure_view(
+              fill="#FFFFCC"
+          )  # グラフのプロットエリア（罫線の中）の背景色を指定
       )
       st.altair_chart(chart, use_container_width=True)
 

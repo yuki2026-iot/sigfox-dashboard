@@ -1,0 +1,24 @@
+
+name: Streamlit Keep Alive
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Access Streamlit
+        run: |
+          curl -L -sS \
+            --max-time 30 \
+            -o /dev/null \
+            -w 'HTTP Status: %{http_code}\n' \
+            "https://sigfox-dashboard-rhcu hj8gx7kjpwimmqjdwh.streamlit.app"

@@ -17,8 +17,8 @@ jobs:
     steps:
       - name: Access Streamlit
         run: |
-          curl -L -sS --fail \
+          curl -sS -I \
             --max-time 30 \
-            -o /dev/null \
-            -w 'HTTP Status: %{http_code}\n' \
+            --max-redirs 0 \
             "https://sigfox-dashboard-rhcuhj8gx7kjpwimmqjdwh.streamlit.app/"
+
